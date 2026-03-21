@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orthodontic Bonding Tracking System</title>
+    <title>White Orthodontics Bonding Tracking System</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -54,6 +54,7 @@
             display: flex;
             border-bottom: 1px solid #ddd;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .tab {
             padding: 10px 20px;
@@ -63,6 +64,7 @@
             border-radius: 5px 5px 0 0;
             background-color: #f1f1f1;
             margin-right: 5px;
+            margin-bottom: -1px;
         }
         .tab.active {
             background-color: #3498db;
@@ -75,12 +77,17 @@
         .tab-content.active {
             display: block;
         }
-        input, select {
+        input, select, textarea {
             padding: 8px;
             margin: 5px 0;
             border: 1px solid #ddd;
             border-radius: 4px;
             width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            font-family: Arial, sans-serif;
         }
         button {
             background-color: #3498db;
@@ -93,6 +100,10 @@
         }
         button:hover {
             background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
         }
         .success {
             background-color: #2ecc71;
@@ -113,14 +124,24 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
         }
-        .chart-container {
-            height: 300px;
-            max-width: 100%;
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
         }
     </style>
 </head>
 <body>
-    <h1>Orthodontic Bonding Tracking System</h1>
+    <h1>White Orthodontics Bonding Tracking System</h1>
+    <div id="connectionStatus" style="padding: 10px; margin-bottom: 10px; border-radius: 4px;"></div>
     
     <div class="tabs">
         <div class="tab active" onclick="openTab(event, 'dashboard')">Dashboard</div>
@@ -132,750 +153,893 @@
     
     <div id="dashboard" class="tab-content active">
         <h2>Bonding Performance Dashboard</h2>
-        <div class="dashboard">
-            <div class="card">
-                <h3>Failure Rate by Clinician</h3>
-                <div class="chart-container" id="clinicianChart">
-                    <!-- Chart will be rendered here -->
-                    <table>
-                        <tr>
-                            <th>Clinician</th>
-                            <th>Bonds</th>
-                            <th>Failures</th>
-                            <th>Failure Rate</th>
-                        </tr>
-                        <tr>
-                            <td>Amber</td>
-                            <td>120</td>
-                            <td>6</td>
-                            <td>5.0%</td>
-                        </tr>
-                        <tr>
-                            <td>Kaitlyn</td>
-                            <td>105</td>
-                            <td>7</td>
-                            <td>6.7%</td>
-                        </tr>
-                        <tr>
-                            <td>Autumn</td>
-                            <td>98</td>
-                            <td>4</td>
-                            <td>4.1%</td>
-                        </tr>
-                        <tr>
-                            <td>Julia</td>
-                            <td>112</td>
-                            <td>8</td>
-                            <td>7.1%</td>
-                        </tr>
-                    </table>
+        <div class="loading" id="dashboardLoading">Loading dashboard data...</div>
+        <div id="dashboardContent" style="display: none;">
+            <div class="dashboard">
+                <div class="card">
+                    <h3>Failure Rate by Clinician</h3>
+                    <div class="chart-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Clinician</th>
+                                    <th>Failures</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clinicianStats"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Failure Rate by Tooth Type</h3>
+                    <div class="chart-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tooth Type</th>
+                                    <th>Failures</th>
+                                </tr>
+                            </thead>
+                            <tbody id="toothTypeStats"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Failure Rate by Bonding Method</h3>
+                    <div class="chart-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Failures</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bondingMethodStats"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            <div class="card">
-                <h3>Failure Rate by Tooth Type</h3>
-                <div class="chart-container" id="toothTypeChart">
-                    <!-- Chart will be rendered here -->
-                    <table>
-                        <tr>
-                            <th>Tooth Type</th>
-                            <th>Bonds</th>
-                            <th>Failures</th>
-                            <th>Failure Rate</th>
-                        </tr>
-                        <tr>
-                            <td>Incisors</td>
-                            <td>156</td>
-                            <td>9</td>
-                            <td>5.8%</td>
-                        </tr>
-                        <tr>
-                            <td>Canines</td>
-                            <td>98</td>
-                            <td>7</td>
-                            <td>7.1%</td>
-                        </tr>
-                        <tr>
-                            <td>Premolars</td>
-                            <td>124</td>
-                            <td>5</td>
-                            <td>4.0%</td>
-                        </tr>
-                        <tr>
-                            <td>Molars</td>
-                            <td>87</td>
-                            <td>4</td>
-                            <td>4.6%</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            <div class="card">
-                <h3>Failure Rate by Bonding Method</h3>
-                <div class="chart-container" id="bondingMethodChart">
-                    <!-- Chart will be rendered here -->
-                    <table>
-                        <tr>
-                            <th>Method</th>
-                            <th>Bonds</th>
-                            <th>Failures</th>
-                            <th>Failure Rate</th>
-                        </tr>
-                        <tr>
-                            <td>Standard Twin</td>
-                            <td>310</td>
-                            <td>18</td>
-                            <td>5.8%</td>
-                        </tr>
-                        <tr>
-                            <td>KLOwen Digital</td>
-                            <td>125</td>
-                            <td>7</td>
-                            <td>5.6%</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
+            
+            <h2>Recent Equipment Check Status</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Equipment</th>
+                        <th>Last Check Date</th>
+                        <th>Performed By</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="recentEquipmentChecks"></tbody>
+            </table>
         </div>
-        
-        <h2>Recent Equipment Check Status</h2>
-        <table>
-            <tr>
-                <th>Equipment</th>
-                <th>Last Check Date</th>
-                <th>Performed By</th>
-                <th>Status</th>
-                <th>Next Check</th>
-            </tr>
-            <tr>
-                <td>Curing Light #1</td>
-                <td>2025-04-10</td>
-                <td>Amber</td>
-                <td>Passed (850 mW/cm²)</td>
-                <td>2025-04-17</td>
-            </tr>
-            <tr>
-                <td>Curing Light #2</td>
-                <td>2025-04-10</td>
-                <td>Kaitlyn</td>
-                <td>Passed (820 mW/cm²)</td>
-                <td>2025-04-17</td>
-            </tr>
-            <tr>
-                <td>Curing Light #3</td>
-                <td>2025-04-10</td>
-                <td>Julia</td>
-                <td>Below Threshold (750 mW/cm²)</td>
-                <td>NEEDS ATTENTION</td>
-            </tr>
-            <tr>
-                <td>NOLA Isolation Unit</td>
-                <td>2025-04-12</td>
-                <td>Autumn</td>
-                <td>Passed</td>
-                <td>2025-04-19</td>
-            </tr>
-        </table>
     </div>
     
     <div id="bondingFailures" class="tab-content">
         <h2>Record New Bonding Failure</h2>
-        <div class="form-grid">
-            <div>
-                <label for="patientId">Patient ID:</label>
-                <input type="text" id="patientId" placeholder="Enter Patient ID">
+        <form id="failureForm">
+            <div class="form-grid">
+                <div>
+                    <label for="patientId">Patient ID:</label>
+                    <input type="text" id="patientId" placeholder="Enter Patient ID" required>
+                </div>
+                <div>
+                    <label for="clinician">Clinician:</label>
+                    <select id="clinician" required>
+                        <option value="">Select Clinician</option>
+                        <option value="Amber">Amber</option>
+                        <option value="Autumn">Autumn</option>
+                        <option value="Julia">Julia</option>
+                        <option value="Kaitlin">Kaitlin</option>
+                        <option value="Sydnie">Sydnie</option>
+                        <option value="Lily">Lily</option>
+                        <option value="Evan">Evan</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="toothNumber">Tooth Number:</label>
+                    <input type="number" id="toothNumber" min="1" max="32" placeholder="Enter Tooth Number" required>
+                </div>
+                <div>
+                    <label for="bracketType">Bracket Type:</label>
+                    <select id="bracketType" required>
+                        <option value="">Select Type</option>
+                        <option value="Standard Twin">Standard American Twin</option>
+                        <option value="KLOwen">KLOwen Digital Indirect</option>
+                        <option value="Sidekick">Sidekick</option>
+                        <option value="Conventional Button">Conventional Button</option>
+                        <option value="RPE">RPE</option>
+                        <option value="Motion Appliance">Motion Appliance</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="isolationMethod">Isolation Method:</label>
+                    <select id="isolationMethod" required>
+                        <option value="">Select Method</option>
+                        <option value="Cotton Rolls">Cotton Rolls Only</option>
+                        <option value="NOLA">NOLA Isolation Unit</option>
+                        <option value="Combined">Combined Methods</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="etchingProduct">Etching Product:</label>
+                    <select id="etchingProduct" required>
+                        <option value="">Select Product</option>
+                        <option value="L-Pop">L-Pop All-in-One</option>
+                        <option value="Phosphoric Acid">Conventional Phosphoric Acid</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="bondingAgent">Bonding Agent:</label>
+                    <select id="bondingAgent" required>
+                        <option value="">Select Agent</option>
+                        <option value="Assure">Assure</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="adhesive">Adhesive:</label>
+                    <select id="adhesive" required>
+                        <option value="">Select Adhesive</option>
+                        <option value="Light Cure">Light Cure (Reliance)</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="curingLight">Curing Light Used:</label>
+                    <select id="curingLight" required>
+                        <option value="">Select Light</option>
+                        <option value="Light #1">Curing Light #1</option>
+                        <option value="Light #2">Curing Light #2</option>
+                        <option value="Light #3">Curing Light #3</option>
+                        <option value="Light #4">Curing Light #4</option>
+                        <option value="Light #5">Curing Light #5</option>
+                        <option value="Light #6">Curing Light #6</option>
+                        <option value="Light #7">Curing Light #7</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="curingTime">Curing Time (seconds):</label>
+                    <input type="number" id="curingTime" min="1" placeholder="Enter Curing Time" required>
+                </div>
+                <div>
+                    <label for="timeSinceBonding">Time Since Bonding:</label>
+                    <select id="timeSinceBonding" required>
+                        <option value="">Select Time</option>
+                        <option value="Same Day">Same Day</option>
+                        <option value="1-3 Days">1-3 Days</option>
+                        <option value="4-7 Days">4-7 Days</option>
+                        <option value="1-2 Weeks">1-2 Weeks</option>
+                        <option value="2-4 Weeks">2-4 Weeks</option>
+                        <option value="1-3 Months">1-3 Months</option>
+                        <option value="3+ Months">3+ Months</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="failureType">Failure Type:</label>
+                    <select id="failureType" required>
+                        <option value="">Select Type</option>
+                        <option value="Bracket-Adhesive">Bracket-Adhesive Interface</option>
+                        <option value="Adhesive-Enamel">Adhesive-Enamel Interface</option>
+                        <option value="Bracket Fracture">Bracket Fracture</option>
+                        <option value="Enamel Fracture">Enamel Fracture</option>
+                    </select>
+                </div>
             </div>
             <div>
-                <label for="clinician">Clinician:</label>
-                <select id="clinician">
-                    <option value="">Select Clinician</option>
-                    <option value="Amber">Amber</option>
-                    <option value="Kaitlyn">Kaitlyn</option>
-                    <option value="Autumn">Autumn</option>
-                    <option value="Julia">Julia</option>
-                    <option value="Kaitlin S.">Kaitlin S.</option>
-                </select>
+                <label for="failureDetails">Additional Details:</label>
+                <textarea id="failureDetails" rows="4" placeholder="Enter any additional details or observations about the failure"></textarea>
             </div>
-            <div>
-                <label for="toothNumber">Tooth Number:</label>
-                <input type="number" id="toothNumber" min="1" max="32" placeholder="Enter Tooth Number">
-            </div>
-            <div>
-                <label for="bracketType">Bracket Type:</label>
-                <select id="bracketType">
-                    <option value="">Select Type</option>
-                    <option value="Standard Twin">Standard American Twin</option>
-                    <option value="KLOwen">KLOwen Digital Indirect</option>
-                    <option value="Sidekick">Sidekick</option>
-                    <option value="Conventional Button">Conventional Button</option>
-                    <option value="RPE">RPE</option>
-                    <option value="Motion Appliance">Motion Appliance</option>
-                </select>
-            </div>
-            <div>
-                <label for="isolationMethod">Isolation Method:</label>
-                <select id="isolationMethod">
-                    <option value="">Select Method</option>
-                    <option value="Cotton Rolls">Cotton Rolls Only</option>
-                    <option value="NOLA">NOLA Isolation Unit</option>
-                    <option value="Combined">Combined Methods</option>
-                </select>
-            </div>
-            <div>
-                <label for="etchingProduct">Etching Product:</label>
-                <select id="etchingProduct">
-                    <option value="">Select Product</option>
-                    <option value="L-Pop">L-Pop All-in-One</option>
-                    <option value="Phosphoric Acid">Conventional Phosphoric Acid</option>
-                </select>
-            </div>
-            <div>
-                <label for="bondingAgent">Bonding Agent:</label>
-                <select id="bondingAgent">
-                    <option value="">Select Agent</option>
-                    <option value="Assure">Assure</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div>
-                <label for="adhesive">Adhesive:</label>
-                <select id="adhesive">
-                    <option value="">Select Adhesive</option>
-                    <option value="Light Cure">Light Cure (Reliance)</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div>
-                <label for="curingLight">Curing Light Used:</label>
-                <select id="curingLight">
-                    <option value="">Select Light</option>
-                    <option value="Light #1">Curing Light #1</option>
-                    <option value="Light #2">Curing Light #2</option>
-                    <option value="Light #3">Curing Light #3</option>
-                    <option value="Light #4">Curing Light #4</option>
-                    <option value="Light #5">Curing Light #5</option>
-                    <option value="Light #6">Curing Light #6</option>
-                    <option value="Light #7">Curing Light #7</option>
-                </select>
-            </div>
-            <div>
-                <label for="curingTime">Curing Time (seconds):</label>
-                <input type="number" id="curingTime" min="1" placeholder="Enter Curing Time">
-            </div>
-            <div>
-                <label for="timeSinceBonding">Time Since Bonding:</label>
-                <select id="timeSinceBonding">
-                    <option value="">Select Time</option>
-                    <option value="Same Day">Same Day</option>
-                    <option value="1-3 Days">1-3 Days</option>
-                    <option value="4-7 Days">4-7 Days</option>
-                    <option value="1-2 Weeks">1-2 Weeks</option>
-                    <option value="2-4 Weeks">2-4 Weeks</option>
-                    <option value="1-3 Months">1-3 Months</option>
-                    <option value="3+ Months">3+ Months</option>
-                </select>
-            </div>
-            <div>
-                <label for="failureType">Failure Type:</label>
-                <select id="failureType">
-                    <option value="">Select Type</option>
-                    <option value="Bracket-Adhesive">Bracket-Adhesive Interface</option>
-                    <option value="Adhesive-Enamel">Adhesive-Enamel Interface</option>
-                    <option value="Bracket Fracture">Bracket Fracture</option>
-                    <option value="Enamel Fracture">Enamel Fracture</option>
-                </select>
-            </div>
-        </div>
-        <div>
-            <label for="failureDetails">Additional Details:</label>
-            <textarea id="failureDetails" rows="4" placeholder="Enter any additional details or observations about the failure"></textarea>
-        </div>
-        <button>Submit Failure Record</button>
+            <button type="submit" id="submitFailureBtn">Submit Failure Record</button>
+            <div id="failureMessage"></div>
+        </form>
         
         <h2>Recent Bonding Failures</h2>
-        <table>
-            <tr>
-                <th>Date</th>
-                <th>Patient ID</th>
-                <th>Clinician</th>
-                <th>Tooth #</th>
-                <th>Bracket Type</th>
-                <th>Failure Type</th>
-                <th>Time Since Bonding</th>
-                <th>Actions</th>
-            </tr>
-            <tr>
-                <td>2025-04-15</td>
-                <td>PT10293</td>
-                <td>Amber</td>
-                <td>11</td>
-                <td>Standard Twin</td>
-                <td>Adhesive-Enamel</td>
-                <td>4-7 Days</td>
-                <td><button>View Details</button></td>
-            </tr>
-            <tr>
-                <td>2025-04-14</td>
-                <td>PT10542</td>
-                <td>Julia</td>
-                <td>23</td>
-                <td>KLOwen</td>
-                <td>Bracket-Adhesive</td>
-                <td>1-3 Days</td>
-                <td><button>View Details</button></td>
-            </tr>
-            <tr>
-                <td>2025-04-12</td>
-                <td>PT09876</td>
-                <td>Kaitlyn</td>
-                <td>14</td>
-                <td>Standard Twin</td>
-                <td>Bracket Fracture</td>
-                <td>2-4 Weeks</td>
-                <td><button>View Details</button></td>
-            </tr>
+        <div class="loading" id="failuresLoading">Loading failures...</div>
+        <table id="failuresTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Patient ID</th>
+                    <th>Clinician</th>
+                    <th>Tooth #</th>
+                    <th>Bracket Type</th>
+                    <th>Failure Type</th>
+                    <th>Time Since Bonding</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="failuresList"></tbody>
         </table>
     </div>
-    
     <div id="equipmentChecks" class="tab-content">
         <h2>Record Equipment Check</h2>
-        <div class="form-grid">
-            <div>
-                <label for="equipmentType">Equipment Type:</label>
-                <select id="equipmentType">
-                    <option value="">Select Equipment</option>
-                    <option value="Curing Light">Curing Light</option>
-                    <option value="NOLA">NOLA Isolation Unit</option>
-                    <option value="Air Compressor">Air Compressor</option>
-                </select>
+        <form id="equipmentForm">
+            <div class="form-grid">
+                <div>
+                    <label for="equipmentType">Equipment Type:</label>
+                    <select id="equipmentType" required>
+                        <option value="">Select Equipment</option>
+                        <option value="Curing Light">Curing Light</option>
+                        <option value="NOLA">NOLA Isolation Unit</option>
+                        <option value="Air Compressor">Air Compressor</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="equipmentId">Equipment ID:</label>
+                    <select id="equipmentId" required>
+                        <option value="">Select ID</option>
+                        <option value="Light #1">Curing Light #1</option>
+                        <option value="Light #2">Curing Light #2</option>
+                        <option value="Light #3">Curing Light #3</option>
+                        <option value="Light #4">Curing Light #4</option>
+                        <option value="Light #5">Curing Light #5</option>
+                        <option value="Light #6">Curing Light #6</option>
+                        <option value="Light #7">Curing Light #7</option>
+                        <option value="NOLA #1">NOLA Unit #1</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="checkPerformedBy">Check Performed By:</label>
+                    <select id="checkPerformedBy" required>
+                        <option value="">Select Staff</option>
+                        <option value="Amber">Amber</option>
+                        <option value="Autumn">Autumn</option>
+                        <option value="Julia">Julia</option>
+                        <option value="Kaitlin">Kaitlin</option>
+                        <option value="Sydnie">Sydnie</option>
+                        <option value="Lily">Lily</option>
+                        <option value="Evan">Evan</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="checkDate">Check Date:</label>
+                    <input type="date" id="checkDate" required>
+                </div>
+                <div>
+                    <label for="lightIntensity">Light Intensity (mW/cm²):</label>
+                    <input type="number" id="lightIntensity" min="0" placeholder="Enter Light Intensity (if applicable)">
+                </div>
+                <div>
+                    <label for="equipmentStatus">Status:</label>
+                    <select id="equipmentStatus" required>
+                        <option value="">Select Status</option>
+                        <option value="Passed">Passed</option>
+                        <option value="Below Threshold">Below Threshold</option>
+                        <option value="Failed">Failed</option>
+                    </select>
+                </div>
             </div>
             <div>
-                <label for="equipmentId">Equipment ID:</label>
-                <select id="equipmentId">
-                    <option value="">Select ID</option>
-                    <option value="Light #1">Curing Light #1</option>
-                    <option value="Light #2">Curing Light #2</option>
-                    <option value="Light #3">Curing Light #3</option>
-                    <option value="Light #4">Curing Light #4</option>
-                    <option value="Light #5">Curing Light #5</option>
-                    <option value="Light #6">Curing Light #6</option>
-                    <option value="Light #7">Curing Light #7</option>
-                    <option value="NOLA #1">NOLA Unit #1</option>
-                </select>
+                <label for="checkNotes">Notes:</label>
+                <textarea id="checkNotes" rows="4" placeholder="Enter any notes about the equipment check"></textarea>
             </div>
-            <div>
-                <label for="checkPerformedBy">Check Performed By:</label>
-                <select id="checkPerformedBy">
-                    <option value="">Select Staff</option>
-                    <option value="Amber">Amber</option>
-                    <option value="Kaitlyn">Kaitlyn</option>
-                    <option value="Autumn">Autumn</option>
-                    <option value="Julia">Julia</option>
-                    <option value="Kaitlin S.">Kaitlin S.</option>
-                </select>
-            </div>
-            <div>
-                <label for="checkDate">Check Date:</label>
-                <input type="date" id="checkDate">
-            </div>
-        </div>
-        
-        <div id="curingLightFields" class="form-grid">
-            <div>
-                <label for="lightIntensity">Light Intensity (mW/cm²):</label>
-                <input type="number" id="lightIntensity" min="0" placeholder="Enter Light Intensity">
-            </div>
-            <div>
-                <label for="lightStatus">Status:</label>
-                <select id="lightStatus">
-                    <option value="">Select Status</option>
-                    <option value="Passed">Passed (≥800 mW/cm²)</option>
-                    <option value="Below Threshold">Below Threshold (700-799 mW/cm²)</option>
-                    <option value="Failed">Failed (<700 mW/cm²)</option>
-                </select>
-            </div>
-            <div>
-                <label for="bulbAge">Bulb Age (hours):</label>
-                <input type="number" id="bulbAge" min="0" placeholder="Enter Bulb Age">
-            </div>
-        </div>
-        
-        <div>
-            <label for="checkNotes">Notes:</label>
-            <textarea id="checkNotes" rows="4" placeholder="Enter any notes about the equipment check"></textarea>
-        </div>
-        <button>Submit Check Record</button>
+            <button type="submit" id="submitEquipmentBtn">Submit Check Record</button>
+            <div id="equipmentMessage"></div>
+        </form>
         
         <h2>Equipment Check History</h2>
-        <table>
-            <tr>
-                <th>Date</th>
-                <th>Equipment</th>
-                <th>Performed By</th>
-                <th>Reading/Status</th>
-                <th>Notes</th>
-            </tr>
-            <tr>
-                <td>2025-04-10</td>
-                <td>Curing Light #1</td>
-                <td>Amber</td>
-                <td>850 mW/cm² (Passed)</td>
-                <td>Functioning normally</td>
-            </tr>
-            <tr>
-                <td>2025-04-10</td>
-                <td>Curing Light #2</td>
-                <td>Kaitlyn</td>
-                <td>820 mW/cm² (Passed)</td>
-                <td>Light guide needs cleaning</td>
-            </tr>
-            <tr>
-                <td>2025-04-10</td>
-                <td>Curing Light #3</td>
-                <td>Julia</td>
-                <td>750 mW/cm² (Below Threshold)</td>
-                <td>Check bulb age, may need replacement soon</td>
-            </tr>
-            <tr>
-                <td>2025-04-03</td>
-                <td>Curing Light #1</td>
-                <td>Autumn</td>
-                <td>860 mW/cm² (Passed)</td>
-                <td>No issues</td>
-            </tr>
+        <div class="loading" id="equipmentLoading">Loading equipment checks...</div>
+        <table id="equipmentTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Equipment</th>
+                    <th>Performed By</th>
+                    <th>Reading/Status</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="equipmentList"></tbody>
         </table>
     </div>
     
     <div id="materialInventory" class="tab-content">
-        <h2>Material Inventory & Expiration Tracking</h2>
-        <table>
-            <tr>
-                <th>Material</th>
-                <th>Lot/Batch</th>
-                <th>Expiration Date</th>
-                <th>Status</th>
-                <th>Last Checked</th>
-                <th>Checked By</th>
-                <th>Actions</th>
-            </tr>
-            <tr>
-                <td>L-Pop All-in-One</td>
-                <td>LP-2025-0342</td>
-                <td>2025-09-15</td>
-                <td>Valid</td>
-                <td>2025-04-15</td>
-                <td>Amber</td>
-                <td><button>Update</button></td>
-            </tr>
-            <tr>
-                <td>Phosphoric Acid Etch</td>
-                <td>PA-2024-0912</td>
-                <td>2025-06-10</td>
-                <td>Valid</td>
-                <td>2025-04-15</td>
-                <td>Amber</td>
-                <td><button>Update</button></td>
-            </tr>
-            <tr>
-                <td>Assure Bonding Agent</td>
-                <td>AB-2025-0127</td>
-                <td>2025-07-27</td>
-                <td>Valid</td>
-                <td>2025-04-15</td>
-                <td>Julia</td>
-                <td><button>Update</button></td>
-            </tr>
-            <tr>
-                <td>Light Cure Adhesive</td>
-                <td>LC-2024-1103</td>
-                <td>2025-05-03</td>
-                <td>Expires Soon</td>
-                <td>2025-04-15</td>
-                <td>Julia</td>
-                <td><button>Update</button></td>
-            </tr>
-        </table>
-        
         <h2>Add New Material</h2>
-        <div class="form-grid">
-            <div>
-                <label for="materialType">Material Type:</label>
-                <select id="materialType">
-                    <option value="">Select Material</option>
-                    <option value="L-Pop">L-Pop All-in-One</option>
-                    <option value="Phosphoric Acid">Phosphoric Acid Etch</option>
-                    <option value="Assure">Assure Bonding Agent</option>
-                    <option value="Light Cure">Light Cure Adhesive</option>
-                </select>
+        <form id="materialForm">
+            <div class="form-grid">
+                <div>
+                    <label for="materialType">Material Type:</label>
+                    <select id="materialType" required>
+                        <option value="">Select Material</option>
+                        <option value="L-Pop">L-Pop All-in-One</option>
+                        <option value="Phosphoric Acid">Phosphoric Acid Etch</option>
+                        <option value="Assure">Assure Bonding Agent</option>
+                        <option value="Light Cure">Light Cure Adhesive</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="batchNumber">Lot/Batch Number:</label>
+                    <input type="text" id="batchNumber" placeholder="Enter Lot/Batch Number" required>
+                </div>
+                <div>
+                    <label for="expirationDate">Expiration Date:</label>
+                    <input type="date" id="expirationDate" required>
+                </div>
+                <div>
+                    <label for="receivedDate">Date Received:</label>
+                    <input type="date" id="receivedDate" required>
+                </div>
+                <div>
+                    <label for="addedBy">Added By:</label>
+                    <select id="addedBy" required>
+                        <option value="">Select Staff</option>
+                        <option value="Amber">Amber</option>
+                        <option value="Autumn">Autumn</option>
+                        <option value="Julia">Julia</option>
+                        <option value="Kaitlin">Kaitlin</option>
+                        <option value="Sydnie">Sydnie</option>
+                        <option value="Lily">Lily</option>
+                        <option value="Evan">Evan</option>
+                    </select>
+                </div>
             </div>
-            <div>
-                <label for="batchNumber">Lot/Batch Number:</label>
-                <input type="text" id="batchNumber" placeholder="Enter Lot/Batch Number">
-            </div>
-            <div>
-                <label for="expirationDate">Expiration Date:</label>
-                <input type="date" id="expirationDate">
-            </div>
-            <div>
-                <label for="receivedDate">Date Received:</label>
-                <input type="date" id="receivedDate">
-            </div>
-            <div>
-                <label for="addedBy">Added By:</label>
-                <select id="addedBy">
-                    <option value="">Select Staff</option>
-                    <option value="Amber">Amber</option>
-                    <option value="Kaitlyn">Kaitlyn</option>
-                    <option value="Autumn">Autumn</option>
-                    <option value="Julia">Julia</option>
-                    <option value="Kaitlin S.">Kaitlin S.</option>
-                </select>
-            </div>
-        </div>
-        <button>Add Material</button>
+            <button type="submit" id="submitMaterialBtn">Add Material</button>
+            <div id="materialMessage"></div>
+        </form>
         
-        <h2>Weekly Material Check Log</h2>
-        <table>
-            <tr>
-                <th>Week Of</th>
-                <th>Check Completed</th>
-                <th>Performed By</th>
-                <th>Issues Found</th>
-                <th>Actions Taken</th>
-            </tr>
-            <tr>
-                <td>2025-04-14</td>
-                <td>Yes</td>
-                <td>Amber</td>
-                <td>Light Cure Adhesive expires next month</td>
-                <td>Ordered replacement</td>
-            </tr>
-            <tr>
-                <td>2025-04-07</td>
-                <td>Yes</td>
-                <td>Kaitlyn</td>
-                <td>None</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>2025-03-31</td>
-                <td>Yes</td>
-                <td>Julia</td>
-                <td>L-Pop inventory running low</td>
-                <td>Ordered additional units</td>
-            </tr>
+        <h2>Material Inventory & Expiration Tracking</h2>
+        <div class="loading" id="materialsLoading">Loading materials...</div>
+        <table id="materialsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Lot/Batch</th>
+                    <th>Expiration Date</th>
+                    <th>Status</th>
+                    <th>Added By</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="materialsList"></tbody>
         </table>
     </div>
     
     <div id="peerObservations" class="tab-content">
-        <h2>Peer Observation Record</h2>
-        <div class="form-grid">
-            <div>
-                <label for="observationDate">Observation Date:</label>
-                <input type="date" id="observationDate">
+        <h2>Record Peer Observation</h2>
+        <form id="observationForm">
+            <div class="form-grid">
+                <div>
+                    <label for="observationDate">Observation Date:</label>
+                    <input type="date" id="observationDate" required>
+                </div>
+                <div>
+                    <label for="observedClinician">Clinician Observed:</label>
+                    <select id="observedClinician" required>
+                        <option value="">Select Clinician</option>
+                        <option value="Amber">Amber</option>
+                        <option value="Autumn">Autumn</option>
+                        <option value="Julia">Julia</option>
+                        <option value="Kaitlin">Kaitlin</option>
+                        <option value="Sydnie">Sydnie</option>
+                        <option value="Lily">Lily</option>
+                        <option value="Evan">Evan</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="observingClinician">Observed By:</label>
+                    <select id="observingClinician" required>
+                        <option value="">Select Clinician</option>
+                        <option value="Amber">Amber</option>
+                        <option value="Autumn">Autumn</option>
+                        <option value="Julia">Julia</option>
+                        <option value="Kaitlin">Kaitlin</option>
+                        <option value="Sydnie">Sydnie</option>
+                        <option value="Lily">Lily</option>
+                        <option value="Evan">Evan</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="procedureType">Procedure Type:</label>
+                    <select id="procedureType" required>
+                        <option value="">Select Procedure</option>
+                        <option value="Direct Bond">Direct Bonding (Twin Brackets)</option>
+                        <option value="Indirect Bond">Indirect Bonding (KLOwen)</option>
+                        <option value="Rebond">Rebonding</option>
+                    </select>
+                </div>
             </div>
-            <div>
-                <label for="observedClinician">Clinician Observed:</label>
-                <select id="observedClinician">
-                    <option value="">Select Clinician</option>
-                    <option value="Amber">Amber</option>
-                    <option value="Kaitlyn">Kaitlyn</option>
-                    <option value="Autumn">Autumn</option>
-                    <option value="Julia">Julia</option>
-                </select>
+            
+            <h3>Technique Evaluation</h3>
+            <div class="form-grid">
+                <div>
+                    <label>Isolation Technique:</label>
+                    <select id="isolationRating" required>
+                        <option value="">Select Rating</option>
+                        <option value="Satisfactory">Satisfactory</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Surface Drying (5 seconds):</label>
+                    <select id="dryingRating" required>
+                        <option value="">Select Rating</option>
+                        <option value="Satisfactory">Satisfactory</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Etch Application:</label>
+                    <select id="etchRating" required>
+                        <option value="">Select Rating</option>
+                        <option value="Satisfactory">Satisfactory</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Bonding Agent Application:</label>
+                    <select id="bondingRating" required>
+                        <option value="">Select Rating</option>
+                        <option value="Satisfactory">Satisfactory</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Bracket Placement:</label>
+                    <select id="placementRating" required>
+                        <option value="">Select Rating</option>
+                        <option value="Satisfactory">Satisfactory</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Curing Light Position:</label>
+                    <select id="lightPosRating" required>
+                        <option value="">Select Rating</option>
+                        <option value="Satisfactory">Satisfactory</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Glove Discipline (No touching):</label>
+                    <select id="glovesRating" required>
+                        <option value="">Select Rating</option>
+                        <option value="Satisfactory">Satisfactory</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                    </select>
+                </div>
             </div>
+            
             <div>
-                <label for="observingClinician">Observed By:</label>
-                <select id="observingClinician">
-                    <option value="">Select Clinician</option>
-                    <option value="Amber">Amber</option>
-                    <option value="Kaitlyn">Kaitlyn</option>
-                    <option value="Autumn">Autumn</option>
-                    <option value="Julia">Julia</option>
-                    <option value="Kaitlin S.">Kaitlin S.</option>
-                </select>
+                <label for="observationSummary">Overall Observation Summary:</label>
+                <textarea id="observationSummary" rows="4" placeholder="Enter overall observations, strengths, and areas for improvement" required></textarea>
             </div>
+            
             <div>
-                <label for="procedureType">Procedure Type:</label>
-                <select id="procedureType">
-                    <option value="">Select Procedure</option>
-                    <option value="Direct Bond">Direct Bonding (Twin Brackets)</option>
-                    <option value="Indirect Bond">Indirect Bonding (KLOwen)</option>
-                    <option value="Rebond">Rebonding</option>
-                </select>
+                <label for="recommendedAction">Recommended Action:</label>
+                <textarea id="recommendedAction" rows="4" placeholder="Enter recommendations for improvement or training"></textarea>
             </div>
-        </div>
-        
-        <h3>Technique Evaluation</h3>
-        <table>
-            <tr>
-                <th>Procedure Step</th>
-                <th>Satisfactory</th>
-                <th>Needs Improvement</th>
-                <th>Notes</th>
-            </tr>
-            <tr>
-                <td>Isolation Technique</td>
-                <td><input type="radio" name="isolation" value="satisfactory"></td>
-                <td><input type="radio" name="isolation" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-            <tr>
-                <td>Surface Drying (5 seconds)</td>
-                <td><input type="radio" name="drying" value="satisfactory"></td>
-                <td><input type="radio" name="drying" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-            <tr>
-                <td>Etch Application</td>
-                <td><input type="radio" name="etch" value="satisfactory"></td>
-                <td><input type="radio" name="etch" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-            <tr>
-                <td>Etch Evaluation</td>
-                <td><input type="radio" name="etchEval" value="satisfactory"></td>
-                <td><input type="radio" name="etchEval" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-            <tr>
-                <td>Bonding Agent Application</td>
-                <td><input type="radio" name="bonding" value="satisfactory"></td>
-                <td><input type="radio" name="bonding" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-            <tr>
-                <td>Adhesive Application</td>
-                <td><input type="radio" name="adhesive" value="satisfactory"></td>
-                <td><input type="radio" name="adhesive" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-            <tr>
-                <td>Bracket Placement</td>
-                <td><input type="radio" name="placement" value="satisfactory"></td>
-                <td><input type="radio" name="placement" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-            <tr>
-                <td>Curing Light Position</td>
-                <td><input type="radio" name="lightPos" value="satisfactory"></td>
-                <td><input type="radio" name="lightPos" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-            <tr>
-                <td>Curing Time</td>
-                <td><input type="radio" name="curingTime" value="satisfactory"></td>
-                <td><input type="radio" name="curingTime" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-            <tr>
-                <td>Glove Discipline (No touching)</td>
-                <td><input type="radio" name="gloves" value="satisfactory"></td>
-                <td><input type="radio" name="gloves" value="needs_improvement"></td>
-                <td><input type="text" placeholder="Notes"></td>
-            </tr>
-        </table>
-        
-        <div>
-            <label for="observationSummary">Overall Observation Summary:</label>
-            <textarea id="observationSummary" rows="4" placeholder="Enter overall observations, strengths, and areas for improvement"></textarea>
-        </div>
-        
-        <div>
-            <label for="recommendedAction">Recommended Action:</label>
-            <textarea id="recommendedAction" rows="4" placeholder="Enter recommendations for improvement or training"></textarea>
-        </div>
-        
-        <button>Submit Observation</button>
+            
+            <button type="submit" id="submitObservationBtn">Submit Observation</button>
+            <div id="observationMessage"></div>
+        </form>
         
         <h2>Recent Peer Observations</h2>
-        <table>
-            <tr>
-                <th>Date</th>
-                <th>Clinician</th>
-                <th>Observed By</th>
-                <th>Procedure</th>
-                <th>Overall Rating</th>
-                <th>Actions</th>
-            </tr>
-            <tr>
-                <td>2025-04-15</td>
-                <td>Amber</td>
-                <td>Kaitlin S.</td>
-                <td>Direct Bonding</td>
-                <td>Excellent</td>
-                <td><button>View Details</button></td>
-            </tr>
-            <tr>
-                <td>2025-04-08</td>
-                <td>Julia</td>
-                <td>Autumn</td>
-                <td>Indirect Bonding</td>
-                <td>Satisfactory</td>
-                <td><button>View Details</button></td>
-            </tr>
-            <tr>
-                <td>2025-04-01</td>
-                <td>Kaitlyn</td>
-                <td>Julia</td>
-                <td>Rebonding</td>
-                <td>Needs Improvement</td>
-                <td><button>View Details</button></td>
-            </tr>
-        </table>
-        
-        <h2>Video Training Resources</h2>
-        <table>
-            <tr>
-                <th>Title</th>
-                <th>Created Date</th>
-                <th>Featuring</th>
-                <th>Focus Area</th>
-                <th>Duration</th>
-                <th>Actions</th>
-            </tr>
-            <tr>
-                <td>Standard Twin Bracket Bonding - Complete Process</td>
-                <td>2025-03-15</td>
-                <td>Amber</td>
-                <td>Full Procedure</td>
-                <td>8:42</td>
-                <td><button>View</button></td>
-            </tr>
-            <tr>
-                <td>Proper Isolation Techniques</td>
-                <td>2025-03-20</td>
-                <td>Kaitlyn</td>
-                <td>Isolation</td>
-                <td>4:15</td>
-                <td><button>View</button></td>
-            </tr>
-            <tr>
-                <td>KLOwen Digital Indirect Bonding</td>
-                <td>2025-03-25</td>
-                <td>Julia</td>
-                <td>Full Procedure</td>
-                <td>10:20</td>
-                <td><button>View</button></td>
-            </tr>
-            <tr>
-                <td>Optimal Etching & Evaluation</td>
-                <td>2025-04-02</td>
-                <td>Autumn</td>
-                <td>Etching</td>
-                <td>3:50</td>
-                <td><button>View</button></td>
-            </tr>
-            <tr>
-                <td>No-Touch Technique for Bracket Handling</td>
-                <td>2025-04-10</td>
-                <td>Kaitlin S.</td>
-                <td>Glove Discipline</td>
-                <td>5:05</td>
-                <td><button>View</button></td>
-            </tr>
+        <div class="loading" id="observationsLoading">Loading observations...</div>
+        <table id="observationsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Clinician</th>
+                    <th>Observed By</th>
+                    <th>Procedure</th>
+                    <th>Summary</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="observationsList"></tbody>
         </table>
     </div>
-    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhmLLsLVgj_eQQn-PULdTB9eWDBwNgCMI",
+            authDomain: "white-ortho-bonding-tracker.firebaseapp.com",
+            projectId: "white-ortho-bonding-tracker",
+            storageBucket: "white-ortho-bonding-tracker.firebasestorage.app",
+            messagingSenderId: "188684564939",
+            appId: "1:188684564939:web:843a792949f7a695681e4e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const statusDiv = document.getElementById('connectionStatus');
+        statusDiv.textContent = '✓ Connected to Firebase Database';
+        statusDiv.style.backgroundColor = '#2ecc71';
+        statusDiv.style.color = 'white';
+
+        function showMessage(elementId, message, isError = false) {
+            const msgDiv = document.getElementById(elementId);
+            msgDiv.textContent = message;
+            msgDiv.className = isError ? 'error' : 'success';
+            setTimeout(() => {
+                msgDiv.textContent = '';
+                msgDiv.className = '';
+            }, 3000);
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString();
+        }
+
+        async function loadFailures() {
+            try {
+                const q = query(collection(db, 'failures'), orderBy('timestamp', 'desc'), limit(50));
+                const querySnapshot = await getDocs(q);
+                const tbody = document.getElementById('failuresList');
+                tbody.innerHTML = '';
+                
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${formatDate(data.timestamp)}</td>
+                        <td>${data.patientId}</td>
+                        <td>${data.clinician}</td>
+                        <td>${data.toothNumber}</td>
+                        <td>${data.bracketType}</td>
+                        <td>${data.failureType}</td>
+                        <td>${data.timeSinceBonding}</td>
+                        <td><button class="delete-btn" onclick="deleteFailure('${docSnap.id}')">Delete</button></td>
+                    `;
+                });
+                
+                document.getElementById('failuresLoading').style.display = 'none';
+                document.getElementById('failuresTable').style.display = 'table';
+            } catch (error) {
+                console.error('Error loading failures:', error);
+            }
+        }
+
+        async function loadEquipment() {
+            try {
+                const q = query(collection(db, 'equipment'), orderBy('checkDate', 'desc'), limit(50));
+                const querySnapshot = await getDocs(q);
+                const tbody = document.getElementById('equipmentList');
+                tbody.innerHTML = '';
+                
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const row = tbody.insertRow();
+                    const reading = data.lightIntensity ? `${data.lightIntensity} mW/cm² (${data.status})` : data.status;
+                    row.innerHTML = `
+                        <td>${data.checkDate}</td>
+                        <td>${data.equipmentId}</td>
+                        <td>${data.performedBy}</td>
+                        <td>${reading}</td>
+                        <td>${data.notes || 'N/A'}</td>
+                        <td><button class="delete-btn" onclick="deleteEquipment('${docSnap.id}')">Delete</button></td>
+                    `;
+                });
+                
+                document.getElementById('equipmentLoading').style.display = 'none';
+                document.getElementById('equipmentTable').style.display = 'table';
+            } catch (error) {
+                console.error('Error loading equipment:', error);
+            }
+        }
+
+        async function loadMaterials() {
+            try {
+                const q = query(collection(db, 'materials'), orderBy('expirationDate', 'asc'));
+                const querySnapshot = await getDocs(q);
+                const tbody = document.getElementById('materialsList');
+                tbody.innerHTML = '';
+                
+                const today = new Date();
+                const oneMonthFromNow = new Date();
+                oneMonthFromNow.setMonth(today.getMonth() + 1);
+                
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const expDate = new Date(data.expirationDate);
+                    let status = 'Valid';
+                    let statusColor = '#2ecc71';
+                    
+                    if (expDate < today) {
+                        status = 'Expired';
+                        statusColor = '#e74c3c';
+                    } else if (expDate < oneMonthFromNow) {
+                        status = 'Expires Soon';
+                        statusColor = '#f39c12';
+                    }
+                    
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${data.materialType}</td>
+                        <td>${data.batchNumber}</td>
+                        <td>${data.expirationDate}</td>
+                        <td style="color: ${statusColor}; font-weight: bold;">${status}</td>
+                        <td>${data.addedBy}</td>
+                        <td><button class="delete-btn" onclick="deleteMaterial('${docSnap.id}')">Delete</button></td>
+                    `;
+                });
+                
+                document.getElementById('materialsLoading').style.display = 'none';
+                document.getElementById('materialsTable').style.display = 'table';
+            } catch (error) {
+                console.error('Error loading materials:', error);
+            }
+        }
+
+        async function loadObservations() {
+            try {
+                const q = query(collection(db, 'observations'), orderBy('observationDate', 'desc'), limit(50));
+                const querySnapshot = await getDocs(q);
+                const tbody = document.getElementById('observationsList');
+                tbody.innerHTML = '';
+                
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${data.observationDate}</td>
+                        <td>${data.observedClinician}</td>
+                        <td>${data.observingClinician}</td>
+                        <td>${data.procedureType}</td>
+                        <td>${data.observationSummary.substring(0, 50)}...</td>
+                        <td><button class="delete-btn" onclick="deleteObservation('${docSnap.id}')">Delete</button></td>
+                    `;
+                });
+                
+                document.getElementById('observationsLoading').style.display = 'none';
+                document.getElementById('observationsTable').style.display = 'table';
+            } catch (error) {
+                console.error('Error loading observations:', error);
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'failures'));
+                
+                const clinicianStats = {};
+                const toothTypeStats = {};
+                const methodStats = {};
+                
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    
+                    clinicianStats[data.clinician] = (clinicianStats[data.clinician] || 0) + 1;
+                    
+                    const tooth = parseInt(data.toothNumber);
+                    let toothType;
+                    if ([6,7,8,9,10,11,22,23,24,25,26,27].includes(tooth)) toothType = 'Incisors';
+                    else if ([3,14,19,30].includes(tooth)) toothType = 'Canines';
+                    else if ([4,5,12,13,20,21,28,29].includes(tooth)) toothType = 'Premolars';
+                    else toothType = 'Molars';
+                    toothTypeStats[toothType] = (toothTypeStats[toothType] || 0) + 1;
+                    
+                    methodStats[data.bracketType] = (methodStats[data.bracketType] || 0) + 1;
+                });
+                
+                const clinicianTbody = document.getElementById('clinicianStats');
+                clinicianTbody.innerHTML = '';
+                Object.entries(clinicianStats).sort((a, b) => b[1] - a[1]).forEach(([clinician, count]) => {
+                    const row = clinicianTbody.insertRow();
+                    row.innerHTML = `<td>${clinician}</td><td>${count}</td>`;
+                });
+                
+                const toothTbody = document.getElementById('toothTypeStats');
+                toothTbody.innerHTML = '';
+                Object.entries(toothTypeStats).sort((a, b) => b[1] - a[1]).forEach(([type, count]) => {
+                    const row = toothTbody.insertRow();
+                    row.innerHTML = `<td>${type}</td><td>${count}</td>`;
+                });
+                
+                const methodTbody = document.getElementById('bondingMethodStats');
+                methodTbody.innerHTML = '';
+                Object.entries(methodStats).sort((a, b) => b[1] - a[1]).forEach(([method, count]) => {
+                    const row = methodTbody.insertRow();
+                    row.innerHTML = `<td>${method}</td><td>${count}</td>`;
+                });
+                
+                const eqQuery = query(collection(db, 'equipment'), orderBy('checkDate', 'desc'), limit(5));
+                const eqSnapshot = await getDocs(eqQuery);
+                const eqTbody = document.getElementById('recentEquipmentChecks');
+                eqTbody.innerHTML = '';
+                
+                eqSnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const row = eqTbody.insertRow();
+                    row.innerHTML = `
+                        <td>${data.equipmentId}</td>
+                        <td>${data.checkDate}</td>
+                        <td>${data.performedBy}</td>
+                        <td>${data.status}</td>
+                    `;
+                });
+                
+                document.getElementById('dashboardLoading').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        document.getElementById('failureForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitFailureBtn');
+            btn.disabled = true;
+            
+            try {
+                await addDoc(collection(db, 'failures'), {
+                    patientId: document.getElementById('patientId').value,
+                    clinician: document.getElementById('clinician').value,
+                    toothNumber: document.getElementById('toothNumber').value,
+                    bracketType: document.getElementById('bracketType').value,
+                    isolationMethod: document.getElementById('isolationMethod').value,
+                    etchingProduct: document.getElementById('etchingProduct').value,
+                    bondingAgent: document.getElementById('bondingAgent').value,
+                    adhesive: document.getElementById('adhesive').value,
+                    curingLight: document.getElementById('curingLight').value,
+                    curingTime: document.getElementById('curingTime').value,
+                    timeSinceBonding: document.getElementById('timeSinceBonding').value,
+                    failureType: document.getElementById('failureType').value,
+                    failureDetails: document.getElementById('failureDetails').value,
+                    timestamp: new Date()
+                });
+                
+                showMessage('failureMessage', 'Failure record added successfully!');
+                e.target.reset();
+                loadFailures();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error adding failure:', error);
+                showMessage('failureMessage', 'Error: ' + error.message, true);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('equipmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitEquipmentBtn');
+            btn.disabled = true;
+            
+            try {
+                await addDoc(collection(db, 'equipment'), {
+                    equipmentType: document.getElementById('equipmentType').value,
+                    equipmentId: document.getElementById('equipmentId').value,
+                    performedBy: document.getElementById('checkPerformedBy').value,
+                    checkDate: document.getElementById('checkDate').value,
+                    lightIntensity: document.getElementById('lightIntensity').value,
+                    status: document.getElementById('equipmentStatus').value,
+                    notes: document.getElementById('checkNotes').value,
+                    timestamp: new Date()
+                });
+                
+                showMessage('equipmentMessage', 'Equipment check recorded!');
+                e.target.reset();
+                loadEquipment();
+                loadDashboard();
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('equipmentMessage', 'Error: ' + error.message, true);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('materialForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitMaterialBtn');
+            btn.disabled = true;
+            
+            try {
+                await addDoc(collection(db, 'materials'), {
+                    materialType: document.getElementById('materialType').value,
+                    batchNumber: document.getElementById('batchNumber').value,
+                    expirationDate: document.getElementById('expirationDate').value,
+                    receivedDate: document.getElementById('receivedDate').value,
+                    addedBy: document.getElementById('addedBy').value,
+                    timestamp: new Date()
+                });
+                
+                showMessage('materialMessage', 'Material added!');
+                e.target.reset();
+                loadMaterials();
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('materialMessage', 'Error: ' + error.message, true);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('observationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitObservationBtn');
+            btn.disabled = true;
+            
+            try {
+                await addDoc(collection(db, 'observations'), {
+                    observationDate: document.getElementById('observationDate').value,
+                    observedClinician: document.getElementById('observedClinician').value,
+                    observingClinician: document.getElementById('observingClinician').value,
+                    procedureType: document.getElementById('procedureType').value,
+                    isolationRating: document.getElementById('isolationRating').value,
+                    dryingRating: document.getElementById('dryingRating').value,
+                    etchRating: document.getElementById('etchRating').value,
+                    bondingRating: document.getElementById('bondingRating').value,
+                    placementRating: document.getElementById('placementRating').value,
+                    lightPosRating: document.getElementById('lightPosRating').value,
+                    glovesRating: document.getElementById('glovesRating').value,
+                    observationSummary: document.getElementById('observationSummary').value,
+                    recommendedAction: document.getElementById('recommendedAction').value,
+                    timestamp: new Date()
+                });
+                
+                showMessage('observationMessage', 'Observation recorded!');
+                e.target.reset();
+                loadObservations();
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('observationMessage', 'Error: ' + error.message, true);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        window.deleteFailure = async (id) => {
+            if (confirm('Delete this failure record?')) {
+                try {
+                    await deleteDoc(doc(db, 'failures', id));
+                    loadFailures();
+                    loadDashboard();
+                } catch (error) {
+                    alert('Error deleting record');
+                }
+            }
+        };
+
+        window.deleteEquipment = async (id) => {
+            if (confirm('Delete this equipment check?')) {
+                try {
+                    await deleteDoc(doc(db, 'equipment', id));
+                    loadEquipment();
+                    loadDashboard();
+                } catch (error) {
+                    alert('Error deleting record');
+                }
+            }
+        };
+
+        window.deleteMaterial = async (id) => {
+            if (confirm('Delete this material?')) {
+                try {
+                    await deleteDoc(doc(db, 'materials', id));
+                    loadMaterials();
+                } catch (error) {
+                    alert('Error deleting material');
+                }
+            }
+        };
+
+        window.deleteObservation = async (id) => {
+            if (confirm('Delete this observation?')) {
+                try {
+                    await deleteDoc(doc(db, 'observations', id));
+                    loadObservations();
+                } catch (error) {
+                    alert('Error deleting observation');
+                }
+            }
+        };
+
+        loadFailures();
+        loadEquipment();
+        loadMaterials();
+        loadObservations();
+        loadDashboard();
+    </script>
+
     <script>
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
@@ -890,9 +1054,6 @@
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
         }
-        
-        // Initialize with dashboard visible
-        document.getElementById("dashboard").style.display = "block";
     </script>
 </body>
 </html>
