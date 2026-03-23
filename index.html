@@ -992,7 +992,7 @@ label {
             }
         }
 
-        async function loadDashboard() {
+async function loadDashboard() {
             try {
                 const querySnapshot = await getDocs(collection(db, 'failures'));
                 
@@ -1000,8 +1000,21 @@ label {
                 const toothTypeStats = {};
                 const methodStats = {};
                 
+                // Calculate date ranges
+                const now = new Date();
+                const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                
+                let failuresThisWeek = 0;
+                let failuresThisMonth = 0;
+                
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
+                    const failureDate = data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp);
+                    
+                    // Count by time period
+                    if (failureDate >= startOfWeek) failuresThisWeek++;
+                    if (failureDate >= startOfMonth) failuresThisMonth++;
                     
                     clinicianStats[data.clinician] = (clinicianStats[data.clinician] || 0) + 1;
                     
@@ -1015,6 +1028,25 @@ label {
                     
                     methodStats[data.bracketType] = (methodStats[data.bracketType] || 0) + 1;
                 });
+                
+                // Update quick stats
+                document.getElementById('totalFailures').textContent = querySnapshot.size;
+                document.getElementById('failuresThisMonth').textContent = failuresThisMonth;
+                document.getElementById('failuresThisWeek').textContent = failuresThisWeek;
+                
+                // Count expiring materials
+                const materialsSnapshot = await getDocs(collection(db, 'materials'));
+                const oneMonthFromNow = new Date();
+                oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+                let expiringCount = 0;
+                
+                materialsSnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const expDate = new Date(data.expirationDate);
+                    if (expDate < oneMonthFromNow) expiringCount++;
+                });
+                
+                document.getElementById('materialsExpiring').textContent = expiringCount;
                 
                 const clinicianTbody = document.getElementById('clinicianStats');
                 clinicianTbody.innerHTML = '';
