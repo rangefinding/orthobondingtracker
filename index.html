@@ -259,8 +259,33 @@ label {
         <div class="tab" onclick="openTab(event, 'peerObservations')">Peer Observations</div>
     </div>
     
-    <div id="dashboard" class="tab-content active">
+<div id="dashboard" class="tab-content active">
         <h2>Bonding Performance Dashboard</h2>
+        
+        <!-- Quick Stats Cards -->
+        <div class="quick-stats">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number" id="totalFailures">0</div>
+                <div class="stat-label">Total Failures</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-number" id="failuresThisMonth">0</div>
+                <div class="stat-label">This Month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-number" id="failuresThisWeek">0</div>
+                <div class="stat-label">This Week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-number" id="materialsExpiring">0</div>
+                <div class="stat-label">Materials Expiring Soon</div>
+            </div>
+        </div>
+        
         <div class="loading" id="dashboardLoading">Loading dashboard data...</div>
         <div id="dashboardContent" style="display: none;">
             <div class="dashboard">
