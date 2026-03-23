@@ -1216,6 +1216,57 @@ async function loadDashboard() {
             }
         });
 
+        // Export to Excel functions
+        function exportFailuresToExcel() {
+            getDocs(query(collection(db, 'failures'), orderBy('timestamp', 'desc'))).then(snapshot => {
+                let csv = 'Date,Patient ID,Clinician,Tooth #,Bracket Type,Isolation Method,Etching Product,Bonding Agent,Adhesive,Curing Light,Curing Time,Time Since Bonding,Failure Type,Details\n';
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    csv += `${formatDate(data.timestamp)},"${data.patientId}","${data.clinician}","${data.toothNumber}","${data.bracketType}","${data.isolationMethod}","${data.etchingProduct}","${data.bondingAgent}","${data.adhesive}","${data.curingLight}","${data.curingTime}","${data.timeSinceBonding}","${data.failureType}","${data.failureDetails || ''}"\n`;
+                });
+                
+                downloadCSV(csv, 'bonding-failures.csv');
+            });
+        }
+        
+        function exportEquipmentToExcel() {
+            getDocs(query(collection(db, 'equipment'), orderBy('checkDate', 'desc'))).then(snapshot => {
+                let csv = 'Date,Equipment Type,Equipment ID,Performed By,Light Intensity,Status,Notes\n';
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    csv += `"${data.checkDate}","${data.equipmentType}","${data.equipmentId}","${data.performedBy}","${data.lightIntensity || 'N/A'}","${data.status}","${data.notes || ''}"\n`;
+                });
+                
+                downloadCSV(csv, 'equipment-checks.csv');
+            });
+        }
+        
+        function exportMaterialsToExcel() {
+            getDocs(query(collection(db, 'materials'), orderBy('expirationDate', 'asc'))).then(snapshot => {
+                let csv = 'Material Type,Batch Number,Expiration Date,Received Date,Added By\n';
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    csv += `"${data.materialType}","${data.batchNumber}","${data.expirationDate}","${data.receivedDate}","${data.addedBy}"\n`;
+                });
+                
+                downloadCSV(csv, 'material-inventory.csv');
+            });
+        }
+        
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
         window.deleteFailure = async (id) => {
             if (confirm('Delete this failure record?')) {
                 try {
