@@ -608,7 +608,10 @@ label {
             <button type="submit" id="submitEquipmentBtn">Submit Check Record</button>
             <div id="equipmentMessage"></div>
         </form>
-        
+
+        <h2>Equipment Check History</h2>
+        <button class="export-btn" onclick="exportEquipmentToExcel()">📥 Export Equipment Checks to Excel</button>
+        <div class="loading" id="equipmentLoading">Loading equipment checks...</div>
         <h2>Equipment Check History</h2>
         <div class="loading" id="equipmentLoading">Loading equipment checks...</div>
         <table id="equipmentTable" style="display: none;">
@@ -669,7 +672,10 @@ label {
             <button type="submit" id="submitMaterialBtn">Add Material</button>
             <div id="materialMessage"></div>
         </form>
-        
+
+        <h2>Material Inventory & Expiration Tracking</h2>
+        <button class="export-btn" onclick="exportMaterialsToExcel()">📥 Export Materials to Excel</button>
+        <div class="loading" id="materialsLoading">Loading materials...</div>
         <h2>Material Inventory & Expiration Tracking</h2>
         <div class="loading" id="materialsLoading">Loading materials...</div>
         <table id="materialsTable" style="display: none;">
