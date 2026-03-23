@@ -521,7 +521,10 @@ label {
             <button type="submit" id="submitFailureBtn">Submit Failure Record</button>
             <div id="failureMessage"></div>
         </form>
-        
+
+        <h2>Recent Bonding Failures</h2>
+        <button class="export-btn" onclick="exportFailuresToExcel()">📥 Export Failures to Excel</button>
+        <div class="loading" id="failuresLoading">Loading failures...</div>
         <h2>Recent Bonding Failures</h2>
         <div class="loading" id="failuresLoading">Loading failures...</div>
         <table id="failuresTable" style="display: none;">
